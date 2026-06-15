@@ -1,0 +1,60 @@
+services:
+  teslamate:
+    #image: ghcr.io/teslamate-org/teslamate:pr-5406 
+    image: teslamate/teslamate:latest
+    restart: always
+    environment:
+      - ENCRYPTION_KEY=tjdals2435 
+      - DATABASE_USER=teslamate
+      - DATABASE_PASS=tjdals2435
+      - DATABASE_NAME=teslamate
+      - DATABASE_HOST=database
+      - MQTT_HOST=mosquitto
+      - TZ=Asia/Seoul
+    ports:
+      - 4000:4000 
+    volumes:
+      - ./import:/opt/app/import
+    cap_drop:
+      - all
+
+  database:
+    image: postgres:17
+    restart: always
+    environment:
+      - POSTGRES_USER=teslamate
+      - POSTGRES_PASSWORD=tjdals2435
+      - POSTGRES_DB=teslamate
+      - TZ=Asia/Seoul
+    volumes:
+      - ./teslamate-db:/var/lib/postgresql/data
+
+  grafana:
+    image: teslamate/grafana:latest
+    restart: always
+    environment:
+      - DATABASE_USER=teslamate
+      - DATABASE_PASS=tjdals2435
+      - DATABASE_NAME=teslamate
+      - DATABASE_HOST=database
+      - TZ=Asia/Seoul
+    ports:
+      - 1598:3000
+    volumes:
+      - teslamate-grafana-data:/var/lib/grafana
+
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    restart: always
+    command: "mosquitto -c /mosquitto-no-auth.conf"
+    ports:
+      - 1883:1883
+    volumes:
+      - mosquitto-conf:/mosquitto/config
+      - mosquitto-data:/mosquitto/data
+
+volumes:
+  #teslamate-db:
+  teslamate-grafana-data:
+  mosquitto-conf:
+  mosquitto-data:
